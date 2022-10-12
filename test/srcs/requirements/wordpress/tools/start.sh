@@ -1,11 +1,12 @@
 #!/bin/sh
-
 chown -R nginx:nginx .
-while ! $(test $(sh -c "mariadb -h$DB_SERVER -u$DB_USER_NAME -p$DB_USER_PWD 2>&1 | wc -l") -eq 0); do
-	echo "waiting for $DB_SERVER ..."
-	sleep 2
-done
-echo "$DB_SERVER is now available"
+sleep 8
+#while ! $(test $(sh -c "mariadb -h$DB_SERVER -u$DB_USER_NAME -p$DB_USER_PWD 2>&1 | wc -l") -eq 0); do
+#	echo "waiting for $DB_SERVER ..."
+#	sleep 2
+#done
+#echo "$DB_SERVER is now available"
+
 if [ ! -f "/var/www/html/wordpress/index.php" ]; then
 	su nginx -c sh -c ' \
 	wp core download && \
