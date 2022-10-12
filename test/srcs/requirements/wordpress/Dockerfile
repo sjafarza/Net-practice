@@ -1,17 +1,17 @@
 FROM debian:buster 
-LABEL maintainer="saray@student.42.fr"
+#LABEL maintainer="saray@student.42.fr"
 
-ARG PHP_VERSION
+#ARG PHP_VERSION
 
 RUN apt-get -y update && \
 	apt-get -y upgrade && \
 	apt-get install -y \
-		php${PHP_VERSION} \
-		php${PHP_VERSION}-mysql \
-		php${PHP_VERSION}-fpm \
-		php${PHP_VERSION}-gd \
-		php${PHP_VERSION}-mbstring \
-		php${PHP_VERSION}-zip \
+		php7.3 \
+		php7.3-mysql \
+		php7.3-fpm \
+		php7.3-gd \
+		php7.3-mbstring \
+		php7.3-zip \
 		mariadb-client \
 		wget
 
@@ -24,8 +24,8 @@ RUN chown -R www-data:www-data /var/www/html
 RUN useradd  nginx
 # RUN userdel -f www-data && useradd -u 82 www-data
 
-COPY ./conf/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/ 
-COPY ./conf/php-fpm.conf /etc/php/${PHP_VERSION}/fpm/
+COPY ./conf/www.conf /etc/php/7.3/fpm/pool.d/ 
+COPY ./conf/php-fpm.conf /etc/php/7.3/fpm/
 
 # ! Install wp-cli, using it to build, configure wordpress
 RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
