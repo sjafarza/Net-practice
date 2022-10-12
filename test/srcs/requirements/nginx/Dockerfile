@@ -1,9 +1,5 @@
-
-#########sssssssssssssssaaaaaaaaaaaaaaaaa
 FROM	alpine:3.14
 
-ARG DOMAIN_NAME
-ARG LOGIN
 
 RUN		apk update
 RUN		apk upgrade
@@ -13,8 +9,7 @@ RUN		apk add nginx
 
 RUN		mkdir -p /var/www/html/wordpress
 
-COPY     ./conf/ssl.conf /etc/nginx/http.d/ssl.conf  
-#COPY	conf/default.conf /etc/nginx/http.d/default.conf
+COPY     ./conf/default.conf /etc/nginx/http.d/default.conf  
 
 #==== OPENSSL =================================================================#
 # https://www.digicert.com/kb/ssl-support/openssl-quick-reference-guide.htm #
@@ -31,11 +26,7 @@ RUN		openssl req \
           -x509 \
 		-sha256 \
 		-days 365 
-		#-keyout /etc/nginx/ssl/inception.key \
-		#-out /etc/nginx/ssl/inception.crt\
-		#-subj "/C=FR/ST=ILSDEFRANCE/L=PARIS/O=42/OU=inception/CN=inception" \
 		
-
 #==== OPENRC ==================================================================#
 RUN		apk add openrc
 RUN		rc-update add nginx default
