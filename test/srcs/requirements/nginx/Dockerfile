@@ -1,30 +1,45 @@
-# debian because I don't understand alpine issues ._.
-FROM debian:buster
-LABEL maintainer="saray@student.42.fr"
 
-# same cache, so must be run in the same RUN
-RUN apt-get -yq update && \
-	apt-get -yq upgrade && \
-	apt-get install -yq nginx openssl
+#########sssssssssssssssaaaaaaaaaaaaaaaaa
+FROM	alpine:3.14
 
-#set nginx config
 ARG DOMAIN_NAME
 ARG LOGIN
-COPY ./conf/ssl.conf /etc/nginx/conf.d/ssl.conf
-COPY ./tools/replace.sh /replace.sh
-COPY ./tools/start.sh /start.sh
-#set ARGS using env
-RUN bash /replace.sh "DOMAIN_NAME" ${DOMAIN_NAME} /etc/nginx/conf.d/ssl.conf && \
-	bash /replace.sh "LOGIN" ${LOGIN} /etc/nginx/conf.d/ssl.conf
 
-# SSL configuration
-RUN openssl req -new -newkey rsa:2048 -nodes \
-     -out /etc/ssl/certs/$LOGIN.csr \
-     -keyout /etc/ssl/private/$LOGIN.key \
-     -subj "/C=DE/ST=0/L=0/O=0/CN=$LOGIN"
-RUN openssl x509 -req -in /etc/ssl/certs/$LOGIN.csr -signkey /etc/ssl/private/$LOGIN.key -out /etc/ssl/certs/$LOGIN.crt
+RUN		apk update
+RUN		apk upgrade
 
-# # Start initialization script
-# # [,] exec form for perfs
-# # ENTRYPOINT because CMD can be overrided, and we don't want it. Well, entrypoint can too, but less easily
-ENTRYPOINT ["bash", "/start.sh"]
+#==== NGINX ===================================================================#
+RUN		apk add nginx
+
+RUN		mkdir -p /var/www/html/wordpress
+
+COPY     ./conf/ssl.conf /etc/nginx/http.d/ssl.conf  
+#COPY	conf/default.conf /etc/nginx/http.d/default.conf
+
+#==== OPENSSL =================================================================#
+# https://www.digicert.com/kb/ssl-support/openssl-quick-reference-guide.htm #
+
+RUN		apk add openssl
+RUN		mkdir -p /etc/nginx/ssl
+
+RUN		openssl req \
+		-newkey rsa:4096 \
+		-nodes \
+          -out /etc/ssl/certs/user42.crt \ 
+          -keyout /etc/ssl/private/user42.key \
+          -subj "/C=DE/ST=0/L=0/O=0/CN=user42" \
+          -x509 \
+		-sha256 \
+		-days 365 
+		#-keyout /etc/nginx/ssl/inception.key \
+		#-out /etc/nginx/ssl/inception.crt\
+		#-subj "/C=FR/ST=ILSDEFRANCE/L=PARIS/O=42/OU=inception/CN=inception" \
+		
+
+#==== OPENRC ==================================================================#
+RUN		apk add openrc
+RUN		rc-update add nginx default
+
+#==============================================================================#
+#EXPOSE	443
+CMD		["nginx", "-g", "daemon off;"]
