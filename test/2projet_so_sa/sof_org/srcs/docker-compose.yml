@@ -1,0 +1,69 @@
+version: '3'
+services:
+  mariadb:
+    image: mariadb:${LOGIN}
+    env_file: #needed to access env from script
+      - ".env"
+    build: ./requirements/mariadb/
+    container_name: mariadb # set name to container. Otherwise it will take random name.
+    networks:
+      - network
+    volumes: # named volume: link container's volume to host machine's volume.
+      - "db:/var/lib/mysql"
+    expose: # Exposing the port to linked services, not to the host machine.
+      - "3306"
+    restart: always
+
+  wordpress:
+    image: wordpress:${LOGIN}
+    build:
+      context: ./requirements/wordpress/ 
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+    container_name: wordpress
+    depends_on: # make sure mariadb is available before starting wordpress
+      - mariadb
+    networks:
+      - network
+    expose:
+      - "9000"
+    env_file:
+      - ".env"
+    volumes:
+      - "wp:/var/www/html/wordpress"
+    restart: always
+
+  nginx:
+    image: nginx:${LOGIN}
+    build:
+      context: ./requirements/nginx/ 
+      args:
+        DOMAIN_NAME: ${DOMAIN_NAME}
+        LOGIN: ${LOGIN}
+    container_name: nginx
+    depends_on: # make sure wordpress is available before starting nginx
+      - wordpress
+    networks:
+      - network
+    ports: # define which port we want to expose and the host port it should be exposed to.
+      - "443:443" # host:container
+    volumes: 
+      - "wp:/var/www/html/wordpress"
+    restart: always
+
+networks:
+  network:
+
+volumes:
+  wp:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${DATA_FOLDER}/${WP_FOLDER}
+      o: bind
+  db:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: ${DATA_FOLDER}/${DB_FOLDER}
+      o: 'bind'
