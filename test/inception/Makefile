@@ -11,9 +11,9 @@ $(NAME):
 
 clean:
 	docker-compose --project-directory srcs -f srcs/docker-compose.yml down
-	docker volume rm srcs_database
+	docker volume rm srcs_db
 	docker volume rm srcs_website
-	sudo rm -rf /home/tmatis/data/
+	sudo rm -rf /home/saray/data/
 
 re:	clean all
 
