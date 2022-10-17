@@ -1,0 +1,68 @@
+version: '3'
+services:
+   #=== nginx ===================================================
+   nginx:
+     build: ./requirements/nginx
+     image: nginx:v1
+     container_name: nginx
+     depends_on:
+       - wordpress
+     ports:
+       - "443:443"
+     restart: always
+     networks:
+        - network
+     volumes:
+        - "website:/var/www"
+   #=== wordpress=============================================  
+   wordpress:
+     build: ./requirements/wordpress
+     image: wordpress:v1
+     environment:
+        - WP_ADMIN=${WP_ADMIN}
+        - WP_ADMIN_PASS=${WP_ADMIN_PASS}
+        - WP_USER=${WP_USER}
+        - WP_USER_PASS=${WP_USER_PASS}
+        - DB_NAME=${DB_NAME}
+        - DB_USER=${DB_USER}
+        - DB_PASS=${DB_PASS}
+        - ROOT_PASS=${ROOT_PASS}
+     container_name: wordpress
+     depends_on:
+        - mariadb
+     restart: always
+     networks:
+         network:
+     volumes:
+        - "website:/var/www"
+   #=== mariadb ==============================================  
+   mariadb:
+     build:
+       context: ./requirements/mariadb
+       args:
+         - DB_NAME=${DB_NAME}
+         - DB_USER=${DB_USER}
+         - DB_PASS=${DB_PASS}
+         - ROOT_PASS=${ROOT_PASS}
+     image: mariadb:v1
+     container_name: mariadb
+     restart: always
+     networks:
+         - network
+     volumes:
+        - "database:/var/lib/mysq"
+#=======================================================
+networks:
+   network:
+#===============================================
+volumes:
+   website:
+     driver_opts:
+       type: "none"
+       o: "bind"
+       device: "/home/user42/data/website"
+   database:
+     driver_opts:
+       type: "none"
+       o: "bind"
+       device: "/home/user42/data/database"
